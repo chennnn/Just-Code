@@ -46,29 +46,16 @@ public class CookieNumberOfDay {
 		}
 	}
 
-	public static boolean run1(String args0, String args1, String description)
-			throws IOException, ClassNotFoundException, InterruptedException {
+	public static boolean run(String args0, String args1, String description,
+			Class<? extends Reducer> reduceClass, int flag) throws IOException,
+			ClassNotFoundException, InterruptedException {
 		Configuration conf = new Configuration();
 		Job job = new Job(conf, description);
 		job.setJarByClass(CookieNumberOfDay.class);
 		job.setMapperClass(Map.class);
-		job.setReducerClass(Reduce1.class);
-		job.setMapOutputKeyClass(Text.class);
-		job.setMapOutputValueClass(Text.class);
-		job.setInputFormatClass(TextInputFormat.class);
-		job.setOutputFormatClass(TextOutputFormat.class);
-		FileInputFormat.setInputPaths(job, new Path(args0));
-		FileOutputFormat.setOutputPath(job, new Path(args1));
-		return job.waitForCompletion(true);
-	}
-
-	public static boolean run2(String args0, String args1, String description)
-			throws IOException, ClassNotFoundException, InterruptedException {
-		Configuration conf = new Configuration();
-		Job job = new Job(conf, description);
-		job.setJarByClass(CookieNumberOfDay.class);
-		job.setMapperClass(Map.class);
-		job.setReducerClass(Reduce2.class);
+		job.setReducerClass(reduceClass);
+		if (flag == 1)
+			job.setCombinerClass(reduceClass);
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(Text.class);
 		job.setInputFormatClass(TextInputFormat.class);
@@ -80,9 +67,10 @@ public class CookieNumberOfDay {
 
 	public static void main(String[] args) throws IOException,
 			ClassNotFoundException, InterruptedException {
-//		run2(args[0], args[2], "every day's cookie number");
-		if (run1(args[0], args[1], "find the newest cookies")) {
-			System.exit(run2(args[1]+"/part*", args[2], "every day's cookie number") ? 0 : 1);
+		if (run(args[0], args[1], "find the newest cookies", Reduce1.class,1)) {
+			System.exit(run(args[1] + "/part*", args[2],
+					"every day's cookie number", Reduce2.class,2) ? 0 : 1);
+			return;
 		}
 	}
 }
